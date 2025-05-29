@@ -1,0 +1,12 @@
+services:
+  mongo:
+    image: mongo:4.4
+    container_name: mongo-nestjs
+    restart: always
+    ports:
+      - "27018:27017"  # Puerto externo cambiado para evitar conflicto local
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    volumes:
+      - ./data:/data/db

@@ -22,7 +22,7 @@ export class CategoriesController {
   }
 
   @Get(':id')
-  get(@Param('id', ParseIntPipe) id: number) {
+  get(@Param('id') id: string) {
     return this.categoriesService.findOne(id);
   }
 
@@ -32,15 +32,12 @@ export class CategoriesController {
   }
 
   @Put(':id')
-  update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() payload: UpdateCategoryDto,
-  ) {
+  update(@Param('id') id: string, @Body() payload: UpdateCategoryDto) {
     return this.categoriesService.update(id, payload);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.categoriesService.remove(+id);
+  remove(@Param('id') id: string) {
+    return this.categoriesService.remove(id);
   }
 }

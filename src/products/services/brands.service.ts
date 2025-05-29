@@ -2,24 +2,19 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 
 import { Brand } from '../entities/brand.entity';
 import { CreateBrandDto, UpdateBrandDto } from '../dtos/brand.dtos';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class BrandsService {
-  private counterId = 1;
-  private brands: Brand[] = [
-    {
-      id: 1,
-      name: 'Brand 1',
-      image: 'https://i.imgur.com/U4iGx1j.jpeg',
-    },
-  ];
+  constructor(@InjectModel(Brand.name) private brandModel: Model<Brand>) {}
 
   findAll() {
-    return this.brands;
+    return this.brandModel.find();
   }
 
-  findOne(id: number) {
-    const product = this.brands.find((item) => item.id === id);
+  findOne(id: string) {
+    const product = this.brandModel.findById(id).exec();
     if (!product) {
       throw new NotFoundException(`Brand #${id} not found`);
     }
@@ -27,31 +22,27 @@ export class BrandsService {
   }
 
   create(data: CreateBrandDto) {
-    this.counterId = this.counterId + 1;
-    const newBrand = {
-      id: this.counterId,
-      ...data,
-    };
-    this.brands.push(newBrand);
-    return newBrand;
+    const newBrand = new this.brandModel(data);
+    return newBrand.save();
   }
 
-  update(id: number, changes: UpdateBrandDto) {
-    const brand = this.findOne(id);
-    const index = this.brands.findIndex((item) => item.id === id);
-    this.brands[index] = {
-      ...brand,
-      ...changes,
-    };
-    return this.brands[index];
-  }
+  update(id: string, changes: UpdateBrandDto) {
+    const updated = this.brandModel
+      .findByIdAndUpdate(id, { $set: changes }, { new: true })
+      .exec();
 
-  remove(id: number) {
-    const index = this.brands.findIndex((item) => item.id === id);
-    if (index === -1) {
+    if (!updated) {
       throw new NotFoundException(`Brand #${id} not found`);
     }
-    this.brands.splice(index, 1);
-    return true;
+
+    return updated;
+  }
+
+  remove(id: string) {
+    const deleted = this.brandModel.findByIdAndDelete(id);
+    if (!deleted) {
+      throw new NotFoundException(`Brand #${id} not found`);
+    }
+    return deleted;
   }
 }
